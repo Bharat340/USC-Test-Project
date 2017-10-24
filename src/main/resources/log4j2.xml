@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+
+    <Appenders>
+        <RollingFile name="FILE" fileName="${sys:catalina.home}/logs/uscTestLogs.log"
+                     filePattern="${sys:catalina.home}/logs/$${date:yyyy-MM}/uscTestLogs-%d{MM-dd-yyyy}-%i">
+            <PatternLayout>
+                <Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5p %c{1}:%L - %X{sessionId}--%X{guid}- %m#]%n</Pattern>
+            </PatternLayout>
+            <ThresholdFilter level="INFO"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+            </Policies>
+            <DefaultRolloverStrategy max="1000"/>
+        </RollingFile>
+
+
+    </Appenders>
+
+    <Loggers>
+
+        <Root level="info">
+            <AppenderRef ref="FILE"/>
+        </Root>
+    </Loggers>
+
+</Configuration>

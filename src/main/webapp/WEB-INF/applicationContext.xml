@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:jpa="http://www.springframework.org/schema/data/jpa"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans 
+                           http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context 
+http://www.springframework.org/schema/context/spring-context.xsd
+http://www.springframework.org/schema/jdbc 
+			http://www.springframework.org/schema/jdbc/spring-jdbc-3.1.xsd
+         http://www.springframework.org/schema/data/jpa
+        http://www.springframework.org/schema/data/jpa/spring-jpa-1.0.xsd
+        http://www.springframework.org/schema/util 
+			http://www.springframework.org/schema/util/spring-util-3.1.xsd
+http://www.springframework.org/schema/tx 
+http://www.springframework.org/schema/tx/spring-tx.xsd">
+    <context:annotation-config/>
+    <context:spring-configured/>
+    <context:component-scan base-package="com.mycompany.usc.test">
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+    <context:property-placeholder properties-ref="deployProperties" />
+    <!-- Activate Spring Data JPA repository support -->
+    <jpa:repositories base-package="com.mycompany.usc.test.repository"/>
+    <!--    <context:property-placeholder location="classpath:config.properties" />-->
+    <tx:annotation-driven mode="aspectj" transaction-manager="transactionManager"/>
+
+    <bean id="deployProperties" class="org.springframework.beans.factory.config.PropertiesFactoryBean"
+          p:location="/WEB-INF/spring.properties" />
+    
+    <!-- PayU Database -->
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
+        <property name="user" value="${app.jdbc.usc.test.username}" />
+        <property name="password" value="${app.jdbc.usc.test.password}" />
+        <property name="driverClass" value="${app.jdbc.driverClassName}" />
+        <property name="jdbcUrl" value="${app.jdbc.usc.test.url}" />
+        <property name="minPoolSize" value="1" />
+        <property name="maxPoolSize" value="10" />
+        <property name="acquireIncrement" value="1" />
+        <property name="idleConnectionTestPeriod" value="200" />
+        <property name="maxIdleTime" value="1800" />
+        <property name="maxConnectionAge" value="3600" />
+        <property name="maxIdleTimeExcessConnections" value="600" />
+    </bean>
+    <!-- Declare a JPA entityManagerFactory -->
+    <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean" 
+          p:persistenceXmlLocation="./WEB-INF/persistence.xml"
+          p:persistenceUnitName="hibernatePersistenceUnit"
+          p:dataSource-ref="dataSource"
+          p:jpaVendorAdapter-ref="hibernateVendor"/>
+    
+
+    <!-- Specify our ORM vendor -->
+    <bean id="hibernateVendor" class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter"
+          p:showSql="false"/>
+
+    <!-- Declare a transaction manager for usc db-->
+    <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager" 
+          p:entityManagerFactory-ref="entityManagerFactory"/>
+    
+    <bean id="restTemplate" class="org.springframework.web.client.RestTemplate">
+        <constructor-arg>
+            <bean class="org.springframework.http.client.HttpComponentsClientHttpRequestFactory"
+                  p:readTimeout="60000"
+                  p:connectTimeout="60000" />
+        </constructor-arg>
+    </bean>
+
+</beans>
